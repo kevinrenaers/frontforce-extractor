@@ -1,0 +1,16 @@
+{
+    "frontforce_url": "https://limburg.frontforce.be/app",
+    "frontforce_username": "",
+    "frontforce_password": "",
+    "refresh_interval": 5,
+    "ha_url": "",
+    "ha_token": "",
+    "ha_frontforce_status_entity": {
+        "id": "input_text.frontforce_status",
+        "friendly_name": "frontforce_status"
+    },
+    "ha_frontforce_intervention_entity": {
+        "id": "input_text.frontforce_interventie",
+        "friendly_name": "frontforce_interventie"
+    }
+}
