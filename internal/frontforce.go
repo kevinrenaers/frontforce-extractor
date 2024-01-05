@@ -28,7 +28,7 @@ func NewFrontforce() (frontforce, error) {
 }
 
 func (f frontforce) StartUpdater() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(time.Duration(f.refreshInterval) * time.Second)
 	for range ticker.C {
 		log.Info().Msg("frontforce - updating home assistant values")
 		err := f.updateHAValues()
