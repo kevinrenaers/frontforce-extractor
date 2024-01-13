@@ -44,7 +44,6 @@ func (f frontforce) updateHAValues() {
 	err = f.homeAssistant.updateStatusState(currAvail)
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed updating home assistant values")
-		return
 	}
 	currIntervention, err := f.fetchIntervention()
 	if err != nil {
@@ -54,7 +53,6 @@ func (f frontforce) updateHAValues() {
 	err = f.homeAssistant.updateInterventionState(currIntervention)
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed updating home assistant values")
-		return
 	}
 }
 
