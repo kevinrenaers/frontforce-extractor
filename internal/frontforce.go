@@ -31,35 +31,31 @@ func (f frontforce) StartUpdater() {
 	ticker := time.NewTicker(time.Duration(f.refreshInterval) * time.Second)
 	for range ticker.C {
 		log.Info().Msg("frontforce - updating home assistant values")
-		err := f.updateHAValues()
-		if err != nil {
-			panic(err)
-		}
+		f.updateHAValues()
 	}
 }
 
-func (f frontforce) updateHAValues() error {
+func (f frontforce) updateHAValues() {
 	currAvail, err := f.fetchStatus()
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed fetching status")
-		return err
+		return
 	}
 	err = f.homeAssistant.updateStatusState(currAvail)
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed updating home assistant values")
-		return err
+		return
 	}
 	currIntervention, err := f.fetchIntervention()
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed fetching intervention")
-		return err
+		return
 	}
 	err = f.homeAssistant.updateInterventionState(currIntervention)
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed updating home assistant values")
-		return err
+		return
 	}
-	return nil
 }
 
 func (f frontforce) fetchStatus() (currentAvailability, error) {
