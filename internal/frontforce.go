@@ -10,11 +10,18 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	availabilityUrl  = "api/v1/person/getavailability"
+	currentStatusUrl = "api/v1/unavailability/getcurrent"
+	interventionUrl  = "api/v1/intervention/get"
+)
+
 type frontforce struct {
 	auth            *authorization
 	homeAssistant   homeAssistant
 	url             string
 	refreshInterval int
+	fetchStats      bool
 }
 
 func NewFrontforce() (frontforce, error) {
@@ -22,6 +29,7 @@ func NewFrontforce() (frontforce, error) {
 		auth:          newAuth(),
 		homeAssistant: newHomeAssistant(),
 		url:           viper.GetString("frontforce_url"),
+		fetchStats:    viper.GetBool("fetch_stats"),
 	}
 	result.refreshInterval = viper.GetInt("refresh_interval")
 	return result, nil
@@ -36,6 +44,17 @@ func (f frontforce) StartUpdater() {
 }
 
 func (f frontforce) updateHAValues() {
+	if f.fetchStats {
+		availabilityStat, err := f.fetchAvailabilyStat()
+		if err != nil {
+			log.Error().Err(err).Msg("frontforce - failed fetching availability stat")
+			return
+		}
+		err = f.homeAssistant.updateAvailabilityPercentageState(availabilityStat)
+		if err != nil {
+			log.Error().Err(err).Msg("frontforce - failed updating home assistant values")
+		}
+	}
 	currAvail, err := f.fetchStatus()
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed fetching status")
@@ -59,7 +78,7 @@ func (f frontforce) updateHAValues() {
 func (f frontforce) fetchStatus() (currentAvailability, error) {
 	var bearer = "Bearer " + f.auth.GetToken()
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", f.url, "api/v1/unavailability/getcurrent"), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", f.url, currentStatusUrl), nil)
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed creating get current availability request")
 		return currentAvailability{}, err
@@ -87,10 +106,41 @@ func (f frontforce) fetchStatus() (currentAvailability, error) {
 	return availResp, nil
 }
 
+func (f frontforce) fetchAvailabilyStat() (availabiltyStat, error) {
+	var bearer = "Bearer " + f.auth.GetToken()
+
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", f.url, availabilityUrl), nil)
+	if err != nil {
+		log.Error().Err(err).Msg("frontforce - failed creating get availability statistics request")
+		return availabiltyStat{}, err
+	}
+	req.Header.Add("Authorization", bearer)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error().Err(err).Msg("frontforce - failed getting availability statistics")
+		return availabiltyStat{}, err
+	}
+	if resp.StatusCode != 200 {
+		log.Error().Msgf("frontforce - expected code 200, received: %d", resp.StatusCode)
+		return availabiltyStat{}, err
+	}
+	decoder := json.NewDecoder(resp.Body)
+	var availStatsResp availabiltyStat
+	err = decoder.Decode(&availStatsResp)
+	if err != nil {
+		log.Error().Err(err).Msg("frontforce - failed decoding availability statistics")
+		return availabiltyStat{}, err
+	}
+	log.Info().Msg("frontforce - successfully fetched frontforce availability statistics")
+	return availStatsResp, nil
+}
+
 func (f frontforce) fetchIntervention() (intervention, error) {
 	var bearer = "Bearer " + f.auth.GetToken()
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", f.url, "api/v1/intervention/get"), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", f.url, interventionUrl), nil)
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed creating get current intervention request")
 		return intervention{}, err

@@ -11,10 +11,11 @@ import (
 )
 
 type homeAssistant struct {
-	url                 string
-	token               string
-	status_entity       map[string]string
-	intervention_entity map[string]string
+	url                            string
+	token                          string
+	availability_percentage_entity map[string]string
+	status_entity                  map[string]string
+	intervention_entity            map[string]string
 }
 
 const (
@@ -26,10 +27,28 @@ func newHomeAssistant() homeAssistant {
 	result := homeAssistant{}
 	result.url = viper.GetString("ha_url")
 	result.token = viper.GetString("ha_token")
+	result.availability_percentage_entity = viper.GetStringMapString("ha_frontforce_availability_percentage_entity")
 	result.status_entity = viper.GetStringMapString("ha_frontforce_status_entity")
 	result.intervention_entity = viper.GetStringMapString("ha_frontforce_intervention_entity")
 
 	return result
+}
+
+func (h homeAssistant) updateAvailabilityPercentageState(availabilityStat availabiltyStat) error {
+	attr := map[string]interface{}{
+		"editable":      true,
+		"min":           0,
+		"max":           100,
+		"pattern":       "null",
+		"mode":          "text",
+		"icon":          "mdi:fire",
+		"friendly_name": h.availability_percentage_entity[entity_friendly_name],
+	}
+	err := h.updateState(h.availability_percentage_entity, attr, fmt.Sprintf("%.2f", availabilityStat.Periods[0].PercentAvailable))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (h homeAssistant) updateStatusState(currAvail currentAvailability) error {

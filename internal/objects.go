@@ -35,3 +35,13 @@ type intervention struct {
 		Icon        string `json:"icon"`
 	} `json:"interventionCode"`
 }
+
+type availabiltyStat struct {
+	StartDate        time.Time         `json:"startDate"`
+	EndDate          time.Time         `json:"endDate"`
+	PercentAvailable float32           `json:"percentAvailable"`
+	Periods          []availabiltyStat `json:"periods"`
+	AverageMin       int               `json:"avarageMin"`
+	AverageMax       int               `json:"averageMax"`
+	Level            int               `json:"level"`
+}
