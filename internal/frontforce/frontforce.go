@@ -127,10 +127,6 @@ func (f frontforce) updateHAValues(state shared.State) {
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed updating home assistant interventions values")
 	}
-	err = f.homeAssistant.UpdateVehicleStatsState(state.Vehicles)
-	if err != nil {
-		log.Error().Err(err).Msg("frontforce - failed updating home assistant vehicles values")
-	}
 }
 
 func (f frontforce) negotiate(accessToken string) (string, error) {

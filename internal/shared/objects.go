@@ -46,23 +46,3 @@ type Intervention struct {
 		Icon string `json:"icon"`
 	} `json:"type"`
 }
-
-type vehicleBlock struct {
-	Data []Vehicle `json:"data"`
-}
-
-type Vehicle struct {
-	ID      int    `json:"id"`
-	Name    string `json:"name"`
-	Status  string `json:"status"`
-	Station struct {
-		ID   int    `json:"id"`
-		Code string `json:"code"`
-		Name string `json:"name"`
-	} `json:"station"`
-	Vehicle struct {
-		ID           int    `json:"id"`
-		Code         string `json:"code"`
-		LicensePlate string `json:"licensePlate"`
-	} `json:"vehicle"`
-}

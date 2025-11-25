@@ -7,18 +7,17 @@
    - Description: URL for accessing the Frontforce application.
    - Value: `https://limburg.frontforce.be/app`
 
-2. **frontforce_username**:
+2. **frontforce_initial_refresh_token**:
 
-   - Description: Username for accessing the Frontforce application.
+   - Description: A refresh token used in frontforce website.
 
-3. **frontforce_password**:
+3. **FrontforceDashboardID**:
 
-   - Description: Password for accessing the Frontforce application.
+   - Description: Dasboard id of the dashboard containing relevant info (check url).
 
-4. **refresh_interval**:
+4. **FrontforceUserID**:
 
-   - Description: Interval (in seconds) for refreshing data.
-   - Value: `5` (Change as per your refresh requirements)
+   - Description: User ID of the relevant user in frontforce.
 
 5. **ha_url**:
 

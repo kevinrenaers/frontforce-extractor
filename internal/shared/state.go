@@ -40,7 +40,6 @@ type State struct {
 	blocks        map[string]json.RawMessage
 	Persons       []Person
 	Interventions []Intervention
-	Vehicles      []Vehicle
 }
 
 func NewState(config configuration.Configuration) *State {
@@ -82,22 +81,6 @@ func (s *State) Update(relevantBlocks map[string]json.RawMessage) error {
 		s.Interventions = ib.Data
 	}
 
-	vehiclesBlock, ok := s.blocks[vehiclesBlockID]
-	if ok {
-		vb := vehicleBlock{}
-		err := json.Unmarshal(vehiclesBlock, &vb)
-		if err != nil {
-			return fmt.Errorf("frontforce - failed unmarshalling vehicles block: %w", err)
-		}
-		var relevantVehicles []Vehicle
-		for _, vehicle := range vb.Data {
-			if slices.Contains(s.config.FrontforceVehicleCodes, vehicle.Name) {
-				relevantVehicles = append(relevantVehicles, vehicle)
-			}
-		}
-		s.Vehicles = relevantVehicles
-	}
-
 	return nil
 }
 
@@ -117,36 +100,4 @@ func (s State) GetPerson(id int) Person {
 			IsAvailable: false,
 		},
 	}
-}
-
-func (s State) CalcAvailabilityStats() map[string]any {
-	stats := make(map[string]any)
-
-	var amountCallable float64
-
-	statusStats := make(map[string]int)
-	for _, status := range possibleStatuses {
-		statusStats[status] = 0
-	}
-
-	for _, p := range s.Persons {
-		code := p.UnavailabilityCode.Description
-		statusStats[code]++
-
-		if p.UnavailabilityCode.IsAvailable {
-			amountCallable++
-		}
-	}
-
-	available := float64(len(s.Persons))
-	unavailable := totalAmountPersons - available
-	stats["post_availability_percentage"] = available / totalAmountPersons * 100
-	stats["post_availability_count"] = available
-	stats["post_callable_count"] = amountCallable
-	stats["post_unavailability_count"] = unavailable
-	for status, count := range statusStats {
-		stats[status] = count
-	}
-
-	return stats
 }

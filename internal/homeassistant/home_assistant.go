@@ -155,33 +155,6 @@ func (h HomeAssistant) UpdateInterventionState(interventions []shared.Interventi
 	return nil
 }
 
-func (h HomeAssistant) UpdateVehicleStatsState(vehicleStats []shared.Vehicle) error {
-	for _, vehicleStat := range vehicleStats {
-		vehicleName := strings.ReplaceAll(strings.ToLower(vehicleStat.Name), "-", "_")
-		if vehicleName == "" {
-			continue
-		}
-		statusCodeDetails := shared.StatusCodeDetails(vehicleStat.Status)
-		attr := map[string]any{
-			"editable":      false,
-			"pattern":       "null",
-			"mode":          "text",
-			"icon":          "mdi:fire",
-			"friendly_name": fmt.Sprintf(h.config.HaFrontforceVehicleEntity.FriendlyName, vehicleName),
-			"color":         statusCodeDetails.Color,
-			"text_color":    statusCodeDetails.TextColor,
-			"code":          vehicleStat.Vehicle.Code,
-			"status_code":   vehicleStat.Status,
-		}
-
-		err := h.updateState(fmt.Sprintf(h.config.HaFrontforceVehicleEntity.EntityID, vehicleName), attr, statusCodeDetails.Description)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (h HomeAssistant) updateState(entityId string, attributes map[string]interface{}, value string) error {
 	var bearer = "Bearer " + h.config.HaToken
 
