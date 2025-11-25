@@ -5,7 +5,8 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
-	"renaers.be/frontforce/internal"
+	"renaers.be/frontforce/internal/configuration"
+	"renaers.be/frontforce/internal/frontforce"
 )
 
 func main() {
@@ -17,9 +18,17 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
-	frontforce, err := internal.NewFrontforce()
+
+	var config configuration.Configuration
+
+	err = viper.Unmarshal(&config)
+	if err != nil {
+		panic(fmt.Errorf("unable to decode into struct, %v", err))
+	}
+
+	frontforce, err := frontforce.NewFrontforce(config)
 	if err != nil {
 		panic(fmt.Errorf("fatal setting up frontforce: %w", err))
 	}
-	frontforce.StartUpdater()
+	frontforce.Start()
 }

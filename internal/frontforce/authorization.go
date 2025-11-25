@@ -1,4 +1,4 @@
-package internal
+package frontforce
 
 import (
 	"encoding/json"
@@ -9,34 +9,44 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
+	"renaers.be/frontforce/internal/configuration"
 )
 
 type authorization struct {
-	url         string
-	username    string
-	password    string
-	jwtToken    string
+	url          string
+	refreshToken string
+	tokenChannel chan string
+
 	validUntil  time.Time
 	refreshFrom time.Time
 }
 
-func newAuth() *authorization {
-	auth := &authorization{}
-	auth.url = viper.GetString("frontforce_url")
-	auth.username = viper.GetString("frontforce_username")
-	auth.password = viper.GetString("frontforce_password")
-	auth.fetchToken()
-	auth.startTicker()
+func newAuth(config configuration.Configuration) *authorization {
+	auth := &authorization{
+		url:          config.FrontforceURL,
+		refreshToken: config.FrontforceInitialRefreshToken,
+		tokenChannel: make(chan string),
+	}
+
 	return auth
+}
+
+func (a *authorization) Start() {
+	a.fetchToken()
+	a.startTicker()
+}
+
+func (a *authorization) TokenChannel() chan string {
+	return a.tokenChannel
 }
 
 func (a *authorization) fetchToken() {
 	now := time.Now()
 	data := url.Values{}
-	data.Set("grant_type", "password")
-	data.Set("username", a.username)
-	data.Set("password", a.password)
+	data.Set("grant_type", "refresh_token")
+	data.Set("refresh_token", a.refreshToken)
+	data.Set("client_id", "EmergencyMobile")
+	data.Set("device", `{"token":"pRLak92DxVLwN9HGiWXGqJC64AMv0UDUbywiWas2JHjNtCaj7I","language":"nl-BE","appType":1}`)
 
 	client := &http.Client{}
 	r, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s", a.url, "token"), strings.NewReader(data.Encode()))
@@ -51,6 +61,8 @@ func (a *authorization) fetchToken() {
 	}
 	if resp.StatusCode != 200 {
 		log.Error().Msgf("authorization - expected code 200, received: %d", resp.StatusCode)
+
+		return
 	}
 	decoder := json.NewDecoder(resp.Body)
 	var lr loginResp
@@ -59,8 +71,9 @@ func (a *authorization) fetchToken() {
 		log.Error().Err(err).Msg("authorization - failed decoding login response")
 	}
 
-	a.jwtToken = lr.AccessToken
+	a.tokenChannel <- lr.AccessToken
 	a.validUntil = now.Add(time.Second * time.Duration(lr.ExpiresIn))
+	a.refreshToken = lr.RefreshToken
 	a.refreshFrom = a.validUntil.Add(time.Minute * -15)
 	log.Info().Msgf("authorization - token valid until: %s", a.validUntil.Format(time.RFC3339))
 }
@@ -78,12 +91,9 @@ func (a *authorization) startTicker() {
 	}()
 }
 
-func (a authorization) GetToken() string {
-	return a.jwtToken
-}
-
 type loginResp struct {
-	AccessToken string `json:"access_token"`
-	TokenType   string `json:"token_type"`
-	ExpiresIn   int    `json:"expires_in"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
 }

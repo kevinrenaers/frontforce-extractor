@@ -1,8 +1,13 @@
 {
-    "frontforce_url": "https://limburg.frontforce.be/app",
-    "frontforce_username": "",
-    "frontforce_password": "",
-    "refresh_interval": 5,
+    "frontforce_url": "https://limburg.frontforce.be/api",
+    "frontforce_initial_refresh_token": "",
+    "frontforce_dashboard_id": "61",
+    "frontforce_user_id": 1234,
+    "frontforce_vehicle_codes": [
+        "STT-AP6_1",
+        "STT-HW1",
+        "STT-TW1"
+    ],
     "ha_url": "",
     "ha_token": "",
     "ha_frontforce_status_entity": {
