@@ -26,88 +26,9 @@ func NewHomeAssistant(config configuration.Configuration) HomeAssistant {
 	result := HomeAssistant{
 		config: config,
 	}
-	// result.url = config.HaUrl
-	// result.token = config.HaToken
-	// result.availability_percentage_entity = viper.GetStringMapString("ha_frontforce_availability_percentage_entity")
-	// result.hours_needed_entity = viper.GetStringMapString("ha_frontforce_hours_needed_entity")
-	// result.hours_performed_entity = viper.GetStringMapString("ha_frontforce_hours_performed_entity")
-	// result.hours_remaining_entity = viper.GetStringMapString("ha_frontforce_hours_remaining_entity")
-	// result.max_possible_availability_entity = viper.GetStringMapString("ha_frontforce_max_possible_availability_entity")
-	// result.status_entity = viper.GetStringMapString("ha_frontforce_status_entity")
-	// result.intervention_entity = viper.GetStringMapString("ha_frontforce_intervention_entity")
-	// result.vehicle_status = viper.GetStringMapString("ha_frontforce_vehicle_status")
 
 	return result
 }
-
-// func (h HomeAssistant) updateAvailabilityStates(availabilityStat internal.AvailabiltyStat) error {
-// 	attr := map[string]interface{}{
-// 		"editable":      false,
-// 		"pattern":       "null",
-// 		"mode":          "text",
-// 		"icon":          "mdi:fire",
-// 		"friendly_name": h.availability_percentage_entity[entity_friendly_name],
-// 	}
-// 	err := h.updateState(h.availability_percentage_entity[entity_id], attr, fmt.Sprintf("%.2f", availabilityStat.Periods[0].PercentAvailable))
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	hoursAvailable, neededHours, hoursToGo, maxPercentage := calcAvailabilityStats(availabilityStat.Periods[0].PercentAvailable)
-// 	attr = map[string]interface{}{
-// 		"editable":      false,
-// 		"min":           0,
-// 		"max":           100,
-// 		"mode":          "box",
-// 		"icon":          "mdi:fire",
-// 		"step":          "0.001",
-// 		"friendly_name": h.hours_performed_entity[entity_friendly_name],
-// 	}
-// 	err = h.updateState(h.hours_performed_entity[entity_id], attr, fmt.Sprintf("%.3f", hoursAvailable))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	attr = map[string]interface{}{
-// 		"editable":      false,
-// 		"min":           0,
-// 		"max":           100,
-// 		"mode":          "box",
-// 		"icon":          "mdi:fire",
-// 		"step":          "0.001",
-// 		"friendly_name": h.hours_needed_entity[entity_friendly_name],
-// 	}
-// 	err = h.updateState(h.hours_needed_entity[entity_id], attr, fmt.Sprintf("%.3f", neededHours))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	attr = map[string]interface{}{
-// 		"editable":      false,
-// 		"min":           0,
-// 		"max":           100,
-// 		"mode":          "box",
-// 		"icon":          "mdi:fire",
-// 		"step":          "0.001",
-// 		"friendly_name": h.hours_remaining_entity[entity_friendly_name],
-// 	}
-// 	err = h.updateState(h.hours_remaining_entity[entity_id], attr, fmt.Sprintf("%.3f", hoursToGo))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	attr = map[string]interface{}{
-// 		"editable":      false,
-// 		"min":           0,
-// 		"max":           100,
-// 		"mode":          "box",
-// 		"icon":          "mdi:fire",
-// 		"step":          "0.001",
-// 		"friendly_name": h.max_possible_availability_entity[entity_friendly_name],
-// 	}
-// 	err = h.updateState(h.max_possible_availability_entity[entity_id], attr, fmt.Sprintf("%.2f", maxPercentage))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
 
 func (h HomeAssistant) UpdateStatusState(currAvail shared.UnavailabilityCode) error {
 	textColor := "#ffffff"

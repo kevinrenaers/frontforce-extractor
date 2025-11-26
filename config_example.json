@@ -3,10 +3,8 @@
     "frontforce_initial_refresh_token": "",
     "frontforce_dashboard_id": "61",
     "frontforce_user_id": 1234,
-    "frontforce_vehicle_codes": [
-        "STT-AP6_1",
-        "STT-HW1",
-        "STT-TW1"
+    "frontforce_relevant_blocks": [
+        "1234"
     ],
     "ha_url": "",
     "ha_token": "",

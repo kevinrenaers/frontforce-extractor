@@ -9,18 +9,13 @@ import (
 	"github.com/rs/zerolog/log"
 	"renaers.be/frontforce/internal/configuration"
 	"renaers.be/frontforce/internal/homeassistant"
-	"renaers.be/frontforce/internal/influx"
 	"renaers.be/frontforce/internal/shared"
 	"renaers.be/frontforce/internal/websocket"
 )
 
 const (
-	negotiateUrl     = "hub/dashboard/negotiate?dashboardId=%s&negotiateVersion=%s"
-	dashboardUrl     = "hub/dashboard?dashboardId=%s"
-	availabilityUrl  = "api/v1/person/getavailability"
-	currentStatusUrl = "api/v1/unavailability/getcurrent"
-	interventionUrl  = "api/v1/intervention/get"
-	vehicleStatusUrl = "api/v1/unit/get"
+	negotiateUrl = "hub/dashboard/negotiate?dashboardId=%s&negotiateVersion=%s"
+	dashboardUrl = "hub/dashboard?dashboardId=%s"
 )
 
 type negotiateResponse struct {
@@ -30,7 +25,6 @@ type negotiateResponse struct {
 type frontforce struct {
 	auth            *authorization
 	homeAssistant   homeassistant.HomeAssistant
-	influx          influx.Influx
 	websocketClient websocket.WebsocketClient
 	tokenChannel    chan string
 
@@ -38,6 +32,8 @@ type frontforce struct {
 	userID int
 
 	state *shared.State
+
+	relevantBlocks []string
 }
 
 func NewFrontforce(config configuration.Configuration) (frontforce, error) {
@@ -47,13 +43,14 @@ func NewFrontforce(config configuration.Configuration) (frontforce, error) {
 	result := frontforce{
 		auth:            newAuth(config),
 		homeAssistant:   homeassistant.NewHomeAssistant(config),
-		influx:          influx.NewInflux(config),
 		websocketClient: websocket.NewWebSocketClient(fmt.Sprintf("wss://%s/%s", strippedBaseUrl, dashboardUrl)),
 
 		url:    config.FrontforceURL,
 		userID: config.FrontforceUserID,
 
 		state: shared.NewState(config),
+
+		relevantBlocks: config.FrontforceRelevantBlocks,
 	}
 
 	go result.handleWebsocketMessages()
@@ -95,7 +92,7 @@ func (f frontforce) handleWebsocketMessages() {
 			continue
 		}
 
-		relevantBlocks := frontforceMessage.FetchRelevantBlocks()
+		relevantBlocks := frontforceMessage.FetchRelevantBlocks(f.relevantBlocks)
 
 		if len(relevantBlocks) == 0 {
 			log.Info().Msgf("frontforce - no relevant blocks found in websocket message, so skipping updates")
@@ -121,11 +118,6 @@ func (f frontforce) updateHAValues(state shared.State) {
 	err := f.homeAssistant.UpdateStatusState(person.UnavailabilityCode)
 	if err != nil {
 		log.Error().Err(err).Msg("frontforce - failed updating home assistant personal status values")
-	}
-	interventions := state.Interventions
-	err = f.homeAssistant.UpdateInterventionState(interventions)
-	if err != nil {
-		log.Error().Err(err).Msg("frontforce - failed updating home assistant interventions values")
 	}
 }
 

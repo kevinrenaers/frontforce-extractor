@@ -1,10 +1,11 @@
 package configuration
 
 type Configuration struct {
-	FrontforceURL                 string `mapstructure:"frontforce_url"`
-	FrontforceInitialRefreshToken string `mapstructure:"frontforce_initial_refresh_token"`
-	FrontforceDashboardID         string `mapstructure:"frontforce_dashboard_id"`
-	FrontforceUserID              int    `mapstructure:"frontforce_user_id"`
+	FrontforceURL                 string   `mapstructure:"frontforce_url"`
+	FrontforceInitialRefreshToken string   `mapstructure:"frontforce_initial_refresh_token"`
+	FrontforceDashboardID         string   `mapstructure:"frontforce_dashboard_id"`
+	FrontforceUserID              int      `mapstructure:"frontforce_user_id"`
+	FrontforceRelevantBlocks      []string `mapstructure:"frontforce_relevant_blocks"`
 
 	HaUrl                          string       `mapstructure:"ha_url"`
 	HaToken                        string       `mapstructure:"ha_token"`
